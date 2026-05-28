@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="AzilEdu.Api/AzilEdu.Api.csproj" Id="8027afca-b78a-4259-8b46-b421576ec291" />
+  <Project Path="AzilEdu.Shared/AzilEdu.Shared.csproj" Id="31db4676-f714-4c16-a1ba-032f05d786e4" />
+  <Project Path="AzileduApp/AzileduApp.csproj" Id="031a059b-ec8f-4bb5-aba9-93545df8811e" />
+</Solution>
