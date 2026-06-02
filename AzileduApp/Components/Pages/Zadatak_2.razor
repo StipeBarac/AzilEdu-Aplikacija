@@ -1,0 +1,23 @@
+﻿@page "/Zadatak2"
+@rendermode InteractiveServer
+
+<h3>Zadatak_2 Domaci rad</h3>
+<hr />
+
+<p> Stanje brojaca: @Counter</p>
+<button @onclick="povecajCounter"> + </button>
+<button @onclick="smanjiCounter"> - </button>
+
+
+@code {
+    int Counter = 0;
+
+    void povecajCounter()
+    {
+        Counter++;
+    }
+    void smanjiCounter()
+    {
+        Counter--;
+    }
+}

@@ -1,0 +1,26 @@
+﻿@page "/Zadatak3"
+@rendermode InteractiveServer
+
+<h3>Zadatak_3 Domaći rad</h3>
+<hr />
+
+<label>
+    Unesite vaše ime: <input @bind ="ime" @bind:event="oninput" />
+</label>
+
+<br />
+@* Dodao sam ovdje ovaj @bind:event="oninput" i za ime i za prezime da se tekst osvježava dok se piše*@
+<label>
+    Unesite vaše prezime: <input @bind="prezime" @bind:event="oninput" />
+</label>
+
+<hr />
+<p> Vaše ime i prezime je: @ime @prezime</p> 
+
+
+
+@code {
+    string ime = "";
+    string prezime = "";
+
+}

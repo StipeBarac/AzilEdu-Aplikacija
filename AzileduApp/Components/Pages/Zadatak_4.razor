@@ -1,0 +1,23 @@
+﻿@page "/Zadatak4"
+@rendermode InteractiveServer
+
+<h3>Zadatak_4</h3>
+<hr />
+
+<button @onclick="promijeniVidljivost"> Prikazi ili sakrij poruku</button>
+
+@if (prikaz)
+{
+    <p class="poruka"> Poruka je vidljiva! </p>
+}
+
+@code {
+    bool prikaz = true;
+    
+
+    void promijeniVidljivost()
+    {
+        prikaz = !prikaz;
+    }
+
+}

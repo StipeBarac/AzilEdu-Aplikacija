@@ -1,0 +1,27 @@
+﻿@page "/Zadatak1"
+@rendermode InteractiveServer
+
+<h3>Zadatak_1 domaći rad </h3>
+<hr />
+
+<p class="@nazivKlase"> Ovo je moj tekst </p>
+
+<button @onclick="promijeniBoju"> Promijeni boju teksta</button>
+
+
+
+@code {
+    string nazivKlase = "tekst-plavi";
+
+    void promijeniBoju()
+    {
+        if(nazivKlase == "tekst-plavi")
+        {
+            nazivKlase = "tekst-crveni";        
+        }
+        else
+        {
+            nazivKlase = "tekst-plavi";
+        }
+    }
+}
