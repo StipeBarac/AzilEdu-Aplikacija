@@ -1,0 +1,23 @@
+﻿@page "/Zadatak5"
+@rendermode InteractiveServer
+
+<h3>Zadatak_5</h3>
+
+<ul>
+    @foreach (string igrica in igrice)
+    {
+        <li>@igrica</li>
+    }
+</ul>
+
+@code {
+
+        List<string> igrice = new()
+    {
+        "FIFA",
+        "Call of Duty",
+        "Minecraft"
+
+    };
+
+}

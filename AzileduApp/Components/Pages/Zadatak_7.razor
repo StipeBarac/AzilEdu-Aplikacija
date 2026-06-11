@@ -1,0 +1,17 @@
+﻿@page "/Zadatak7"
+@rendermode InteractiveServer
+
+<h3>Zadatak_7</h3>
+
+<section class="kartica"> 
+    <h3>@nazivAplikacije</h3>
+    <p> @opis</p>
+    <p> Status: @status</p>
+</section>
+
+
+@code {
+    string nazivAplikacije = "AzilEdu";
+    string opis = "Aplikacija za azil";
+    string status = "Aktivna";
+}
