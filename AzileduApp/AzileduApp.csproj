@@ -9,10 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="9.5.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AzilEdu.Shared\AzilEdu.Shared.csproj" />
+    <ProjectReference Include="..\AzilEdu.Api\AzilEdu.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

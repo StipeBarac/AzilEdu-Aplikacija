@@ -1,6 +1,8 @@
 ﻿@page "/housing-units"
 @rendermode InteractiveServer
 @using AzilEdu.Shared.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
 
 <PageTitle>Smještajne Jedinice</PageTitle>
 
@@ -104,7 +106,7 @@
     {
         status = "Pune";
     }
-    
+
     private void ShowFreeUnits()
     {
         status = "Slobodne";
@@ -114,7 +116,7 @@
     {
         status = "sve";
     }
-          
+
 
 
 
@@ -162,82 +164,12 @@
         return Color.Success;                       // slobodno — zeleno
     }
 
-
-
-    private List<HousingUnit> housingUnits = new()
+    protected override async Task OnInitializedAsync()
     {
-        new HousingUnit
-        {
-            Id = 1,
-            Name = "Boks A1",
-            UnitType = "Boks",
-            Capacity = 4,
-            Occupied = 4,                                  // PUN
-            LastCleanedAt = new DateTime(2026, 7, 15),
-            IsActive = true,
-            ImageUrl = "images/HousingUnits/boks-a1.jpg",
-            Note = "Veliki psi, pristup vanjskom dvorištu."
-        },
-        new HousingUnit
-        {
-            Id = 2,
-            Name = "Boks A2",
-            UnitType = "Boks",
-            Capacity = 3,
-            Occupied = 1,                                  // ima mjesta
-            LastCleanedAt = new DateTime(2026, 7, 13),
-            IsActive = true,
-            ImageUrl = "images/HousingUnits/boks-a2.jpg",
-            Note = "Mirniji boks, pogodan za starije pse."
-        },
-        new HousingUnit
-        {
-            Id = 3,
-            Name = "Mačja soba B1",
-            UnitType = "Soba",
-            Capacity = 6,
-            Occupied = 4,
-            LastCleanedAt = null,                          // nepoznato
-            IsActive = true,
-            ImageUrl = "images/HousingUnits/soba-b1.jpg",
-            Note = "Penjalice za mačke."
-        },
-        new HousingUnit
-        {
-            Id = 4,
-            Name = "Mačja soba B2",
-            UnitType = "Soba",
-            Capacity = 4,
-            Occupied = 4,                                  // PUN
-            LastCleanedAt = new DateTime(2026, 7, 16),
-            IsActive = true,
-            ImageUrl = "images/HousingUnits/soba-b2.jpg",
-            Note = "Trenutno popunjeno, čeka se udomljavanje."
-        },
-        new HousingUnit
-        {
-            Id = 5,
-            Name = "Karantena K1",
-            UnitType = "Karantena",
-            Capacity = 2,
-            Occupied = 1,
-            LastCleanedAt = new DateTime(2026, 7, 14),
-            IsActive = true,
-            ImageUrl = "images/HousingUnits/karantena-k1.jpg",
-            Note = "Novopristigle životinje, obavezan pregled."
-        },
-        new HousingUnit
-        {
-            Id = 6,
-            Name = "Boks C3",
-            UnitType = "Boks",
-            Capacity = 5,
-            Occupied = 0,                                  // neaktivan → prazan
-            LastCleanedAt = new DateTime(2026, 6, 18),
-            IsActive = false,                              // NEAKTIVNA
-            ImageUrl = "images/HousingUnits/boks-c3.jpg",
-            Note = "Zatvoren zbog sanacije poda."
-        }
-        
-    };
+        List<HousingUnit>? result = await Http.GetFromJsonAsync<List<HousingUnit>>("api/housingunits");
+        housingUnits = result ?? new List<HousingUnit>();
+    }
+
+    private List<HousingUnit> housingUnits = new();
+    
 }

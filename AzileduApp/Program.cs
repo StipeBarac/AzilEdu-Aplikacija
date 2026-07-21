@@ -3,6 +3,7 @@ using MudBlazor.Services;
 
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,8 +11,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 
-var app = builder.Build();
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("https://localhost:7185/")
+});
 
+
+var app = builder.Build();
 
 
 // Configure the HTTP request pipeline.
