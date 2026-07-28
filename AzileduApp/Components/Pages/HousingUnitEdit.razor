@@ -1,0 +1,112 @@
+﻿@page "/housingunits/edit/{Id:int}"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Uredi stambenu jedinicu</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Na ovoj stranici dohvaćamo postojeći zapis i spremamo promjene preko PUT zahtjeva.
+</MudText>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<MudForm @ref="form" @bind-IsValid="@isFormValid">
+    <MudStack Spacing="2">
+        <MudTextField @bind-Value="model.Name" Label="Naziv" Required="true" Immediate="true" />
+        <MudTextField @bind-Value="model.UnitType" Label="Tip jedinice" Required="true" Immediate="true" />
+        <MudNumericField @bind-Value="model.Capacity" Label="Kapacitet" />
+        <MudNumericField @bind-Value="model.Occupied" Label="Zauzeto" />
+        <MudDatePicker @bind-Date="model.LastCleanedAt" Label="Zadnje čišćenje" />
+        <MudCheckBox @bind-Value="model.IsActive" Label="Aktivna" />
+        <MudTextField @bind-Value="model.ImageUrl" Label="Putanja slike" Immediate="true" />
+        <MudTextField @bind-Value="model.Note" Label="Napomena" Lines="3" Immediate="true" />
+
+        <MudStack Row="true" Class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@UpdateHousingUnit" Disabled="@(!isFormValid)">Spremi promjene</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@Cancel">Otkaži</MudButton>
+        </MudStack>
+    </MudStack>
+</MudForm>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private MudForm? form;
+    private SaveHousingUnitDto model = new();
+    private bool isFormValid = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var housingUnit = await Http.GetFromJsonAsync<HousingUnitDto>($"api/housingunits/{Id}");
+
+            if (housingUnit is not null)
+            {
+                model = new SaveHousingUnitDto
+                {
+                    Name = housingUnit.Name,
+                    UnitType = housingUnit.UnitType,
+                    Capacity = housingUnit.Capacity,
+                    Occupied = housingUnit.Occupied,
+                    LastCleanedAt = housingUnit.LastCleanedAt,
+                    IsActive = housingUnit.IsActive,
+                    ImageUrl = housingUnit.ImageUrl,
+                    Note = housingUnit.Note
+                };
+            }
+            else
+            {
+                errorMessage = "Stambena jedinica nije pronađena.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška pri učitavanju: {ex.Message}";
+        }
+    }
+
+    private async Task UpdateHousingUnit()
+    {
+        if (form is not null)
+        {
+            await form.ValidateAsync();
+
+            if (!form.IsValid)
+            {
+                return;
+            }
+        }
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/housingunits/{Id}", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/housing-units");
+            }
+            else
+            {
+                errorMessage = $"Greška: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška pri spremanju: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/housing-units");
+    }
+}

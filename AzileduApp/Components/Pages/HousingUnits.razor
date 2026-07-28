@@ -1,6 +1,6 @@
 ﻿@page "/housing-units"
 @rendermode InteractiveServer
-@using AzilEdu.Shared.Models
+@using AzilEdu.Shared.DTOs
 @using System.Net.Http.Json
 @inject HttpClient Http
 
@@ -46,6 +46,10 @@
 </MudButtonGroup>
 
 
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/housingunits/create" Class="mb-4">
+    Dodaj novu smještajnu jedinicu
+</MudButton>
+
 
 <MudTable Items="@FilteredUnits" Hover="true" Striped="true" Bordered="true" Dense="true">
     <HeaderContent>
@@ -57,6 +61,7 @@
         <MudTh>Slobodno</MudTh>
         <MudTh>Zadnje čišćenje</MudTh>
         <MudTh>Status</MudTh>
+        <MudTh>Akcije</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Slika">
@@ -77,6 +82,14 @@
                 @GetUnitStatusText(context)
             </MudChip>
         </MudTd>
+        <MudTd DataLabel="Akcije">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="@($"/housingunits/edit/{context.Id}")">
+                Uredi
+            </MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => DeleteHousingUnit(context.Id))">
+                Obriši
+            </MudButton>
+        </MudTd>
     </RowTemplate>
 </MudTable>
 
@@ -89,13 +102,13 @@
     private int TotaFreeCapacity => housingUnits.Sum(unit => (unit.Capacity - unit.Occupied));
     private string status = "sve";
 
-    private IEnumerable<HousingUnit> FilteredUnits => 
+    private IEnumerable<HousingUnitDto> FilteredUnits => 
        status switch{
            "Aktivne"  => housingUnits.Where(unit => unit.IsActive),
            "Pune"     => housingUnits.Where(unit => (unit.Capacity - unit.Occupied) == 0),
            "Slobodne" => housingUnits.Where(unit => unit.IsActive && (unit.Capacity - unit.Occupied) > 0),
            _          => housingUnits
-       };
+       };   
 
     private void ShowActiveUnits()
     {
@@ -118,14 +131,12 @@
     }
 
 
-
-
-    private int GetFreeCapacity(HousingUnit unit)
+    private int GetFreeCapacity(HousingUnitDto unit)
     {
         return unit.Capacity - unit.Occupied;
     }
 
-    private string GetCleaningDateText(HousingUnit unit)
+    private string GetCleaningDateText(HousingUnitDto unit)
     {
         if (unit.LastCleanedAt.HasValue)
         {
@@ -136,7 +147,7 @@
     }
 
 
-    private string GetUnitStatusText(HousingUnit unit)
+    private string GetUnitStatusText(HousingUnitDto unit)
     {
         if (!unit.IsActive)
         {
@@ -153,7 +164,7 @@
 
 
 
-    private Color GetUnitStatusColor(HousingUnit unit)
+    private Color GetUnitStatusColor(HousingUnitDto unit)
     {
         if (!unit.IsActive)
             return Color.Default;                   // nedostupno — sivo
@@ -164,12 +175,22 @@
         return Color.Success;                       // slobodno — zeleno
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        List<HousingUnit>? result = await Http.GetFromJsonAsync<List<HousingUnit>>("api/housingunits");
-        housingUnits = result ?? new List<HousingUnit>();
+    private async Task DeleteHousingUnit(int id)
+    { 
+        var response = await Http.DeleteAsync($"api/housingunits/{id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            housingUnits = housingUnits.Where(a => a.Id != id).ToList();
+        }
     }
 
-    private List<HousingUnit> housingUnits = new();
+    protected override async Task OnInitializedAsync()
+    {
+        List<HousingUnitDto>? result = await Http.GetFromJsonAsync<List<HousingUnitDto>>("api/housingunits");
+        housingUnits = result ?? new List<HousingUnitDto>();
+    }
+
+    private List<HousingUnitDto> housingUnits = new();
     
 }

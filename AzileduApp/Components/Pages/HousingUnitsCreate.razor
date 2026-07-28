@@ -1,0 +1,84 @@
+﻿@page "/housingunits/create"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nova stambena jedinica</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Na ovoj stranici unosimo novu stambenu jedinicu i podatke šaljemo prema API-ju preko POST zahtjeva.
+</MudText>
+
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+<MudAlert Severity="Severity.Info" Class="mb-4">
+    @statusMessage
+</MudAlert>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<MudForm @ref="form" @bind-IsValid="@isFormValid">
+    <MudStack Spacing="2">
+        <MudTextField @bind-Value="model.Name" Label="Naziv" Required="true" Immediate="true" />
+        <MudTextField @bind-Value="model.UnitType" Label="Tip jedinice" Required="true" Immediate="true" />
+        <MudNumericField @bind-Value="model.Capacity" Label="Kapacitet" />
+        <MudNumericField @bind-Value="model.Occupied" Label="Zauzeto" />
+        <MudDatePicker @bind-Date="model.LastCleanedAt" Label="Zadnje čišćenje" />
+        <MudCheckBox @bind-Value="model.IsActive" Label="Aktivna" />
+        <MudTextField @bind-Value="model.ImageUrl" Label="Putanja slike" Immediate="true" />
+        <MudTextField @bind-Value="model.Note" Label="Napomena" Lines="3" Immediate="true" />
+
+        <MudStack Row="true" Class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@HandleSubmit" Disabled="@(!isFormValid)">Dodaj jedinicu</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="@Cancel">Otkaži</MudButton>
+        </MudStack>
+    </MudStack>
+</MudForm>
+
+@code {
+    private MudForm form = null!;
+    private SaveHousingUnitDto model = new();
+    private bool isFormValid = false;
+    private string statusMessage = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            statusMessage = "Slanje podataka...";
+            errorMessage = string.Empty;
+
+            var response = await Http.PostAsJsonAsync("/api/housingunits", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                statusMessage = "Stambena jedinica je uspješno dodana!";
+                await Task.Delay(1500);
+                Navigation.NavigateTo("/housing-units");
+            }
+            else
+            {
+                errorMessage = $"Greška: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/housing-units");
+    }
+}
+

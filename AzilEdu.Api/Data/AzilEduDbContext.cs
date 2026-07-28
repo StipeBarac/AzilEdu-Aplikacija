@@ -9,7 +9,7 @@ public class AzilEduDbContext : DbContext
         : base(options)
     {
     }
-public DbSet<Animal> Animals => Set<Animal>();
+    public DbSet<Animal> Animals => Set<Animal>();
     
     public DbSet<HousingUnit> HousingUnits => Set<HousingUnit>();
 }
