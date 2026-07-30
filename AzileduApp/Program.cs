@@ -1,4 +1,4 @@
-using AzileduApp.Components;
+using AzilEdu.App.Components;
 using MudBlazor.Services;
 
 

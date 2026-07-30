@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AzilEdu.Api.Migrations
 {
     [DbContext(typeof(AzilEduDbContext))]
-    [Migration("20260721165736_AddHousingUnits")]
-    partial class AddHousingUnits
+    [Migration("20260729183344_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,9 @@ namespace AzilEdu.Api.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("Age")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AnimalStatusId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("ArrivalDate")
@@ -48,9 +51,6 @@ namespace AzilEdu.Api.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsAdopted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -61,7 +61,46 @@ namespace AzilEdu.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AnimalStatusId");
+
                     b.ToTable("Animals");
+                });
+
+            modelBuilder.Entity("AzilEdu.Shared.Models.AnimalStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AnimalStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Dostupna za udomljenje"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Rezervirana"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Udomljena"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Na liječenju"
+                        });
                 });
 
             modelBuilder.Entity("AzilEdu.Shared.Models.HousingUnit", b =>
@@ -101,6 +140,22 @@ namespace AzilEdu.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("HousingUnits");
+                });
+
+            modelBuilder.Entity("AzilEdu.Shared.Models.Animal", b =>
+                {
+                    b.HasOne("AzilEdu.Shared.Models.AnimalStatus", "AnimalStatus")
+                        .WithMany("Animals")
+                        .HasForeignKey("AnimalStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AnimalStatus");
+                });
+
+            modelBuilder.Entity("AzilEdu.Shared.Models.AnimalStatus", b =>
+                {
+                    b.Navigation("Animals");
                 });
 #pragma warning restore 612, 618
         }

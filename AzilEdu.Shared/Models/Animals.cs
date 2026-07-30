@@ -13,7 +13,8 @@ public class Animal
     public string Gender { get; set; } = string.Empty;
     public int? Age { get; set; }   //Ovaj upitnik znaci da vrijednost kod koje se nalazi smije biti null, odnosno da je opcionalna
     public DateTime? ArrivalDate { get; set; }
-    public bool IsAdopted { get; set; }
+    public int AnimalStatusId { get; set; }
+    public AnimalStatus? AnimalStatus { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 

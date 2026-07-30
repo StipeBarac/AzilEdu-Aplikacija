@@ -1,0 +1,65 @@
+﻿@page "/volunteers/edit/{Id:int}"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Uredi volontera</MudText>
+
+<MudPaper Class="pa-4" MaxWidth="600px">
+    <MudTextField @bind-Value="model.FirstName" Label="Ime" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.LastName" Label="Prezime" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Email" Label="Email" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Phone" Label="Telefon" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Skills" Label="Vještine" Variant="Variant.Outlined" Class="mb-3" />
+    <MudDatePicker @bind-Date="model.AvailableFrom" Label="Dostupan od" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Notes" Label="Napomena" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
+
+    <MudSelect T="int" @bind-Value="model.VolunteerStatusId" Label="Status" Variant="Variant.Outlined" Class="mb-4">
+        @foreach (var status in statusList)
+        {
+            <MudSelectItem T="int" Value="@status.Id">@status.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save">Spremi promjene</MudButton>
+    <MudButton Variant="Variant.Text" Href="/volunteers">Odustani</MudButton>
+</MudPaper>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private SaveVolunteerDto model = new();
+    private List<LookupDto> statusList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteerstatuses") ?? new();
+
+        var existing = await Http.GetFromJsonAsync<VolunteerDto>($"api/volunteers/{Id}");
+        if (existing is not null)
+        {
+            model = new SaveVolunteerDto
+            {
+                FirstName = existing.FirstName,
+                LastName = existing.LastName,
+                Email = existing.Email,
+                Phone = existing.Phone,
+                Skills = existing.Skills,
+                AvailableFrom = existing.AvailableFrom,
+                Notes = existing.Notes,
+                VolunteerStatusId = existing.VolunteerStatusId
+            };
+        }
+    }
+
+    private async Task Save()
+    {
+        var response = await Http.PutAsJsonAsync($"api/volunteers/{Id}", model);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/volunteers");
+        }
+    }
+}

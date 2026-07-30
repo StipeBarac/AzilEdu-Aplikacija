@@ -1,0 +1,47 @@
+﻿@page "/volunteers/create"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Novi volonter</MudText>
+
+<MudPaper Class="pa-4" MaxWidth="600px">
+    <MudTextField @bind-Value="model.FirstName" Label="Ime" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.LastName" Label="Prezime" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Email" Label="Email" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Phone" Label="Telefon" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Skills" Label="Vještine" Variant="Variant.Outlined" Class="mb-3" />
+    <MudDatePicker @bind-Date="model.AvailableFrom" Label="Dostupan od" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="model.Notes" Label="Napomena" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
+
+    <MudSelect T="int" @bind-Value="model.VolunteerStatusId" Label="Status" Variant="Variant.Outlined" Class="mb-4">
+        @foreach (var status in statusList)
+        {
+            <MudSelectItem T="int" Value="@status.Id">@status.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save">Spremi</MudButton>
+    <MudButton Variant="Variant.Text" Href="/volunteers">Odustani</MudButton>
+</MudPaper>
+
+@code {
+    private SaveVolunteerDto model = new();
+    private List<LookupDto> statusList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteerstatuses") ?? new();
+    }
+
+    private async Task Save()
+    {
+        var response = await Http.PostAsJsonAsync("api/volunteers", model);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/volunteers");
+        }
+    }
+}
