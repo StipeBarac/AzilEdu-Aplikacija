@@ -259,9 +259,163 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AzilEduDbContext>();
+    await db.Database.MigrateAsync();
 
+    if (!await db.Donors.AnyAsync())
+    {
+        db.Donors.AddRange(
+            new Donor
+            {
+                FirstName = "Ivan",
+                LastName = "Marić",
+                OrganizationName = "",
+                Email = "ivan.maric@example.com",
+                Phone = "0912345678",
+                Address = "Ulica kralja Tomislava 12",
+                City = "Split",
+                Notes = "Redovito donira hranu za pse.",
+                CreatedAt = new DateTime(2026, 1, 15),
+                DonorTypeId = 1,          // Fizička osoba
+                DonorStatusId = 2         // Aktivan
+            },
+            new Donor
+            {
+                FirstName = "Marija",
+                LastName = "Kovačević",
+                OrganizationName = "",
+                Email = "marija.kovacevic@example.com",
+                Phone = "0987654321",
+                Address = "Vukovarska 5",
+                City = "Zagreb",
+                Notes = "Povremeno pomaže s prijevozom.",
+                CreatedAt = new DateTime(2026, 2, 3),
+                DonorTypeId = 1,          // Fizička osoba
+                DonorStatusId = 3         // Povremeni
+            },
+            new Donor
+            {
+                FirstName = "",
+                LastName = "",
+                OrganizationName = "Pet Shop Šapica d.o.o.",
+                Email = "info@sapica.hr",
+                Phone = "021555123",
+                Address = "Poljička cesta 30",
+                City = "Split",
+                Notes = "Mjesečno donira vreće hrane i pijesak za mačke.",
+                CreatedAt = new DateTime(2025, 11, 20),
+                DonorTypeId = 2,          // Tvrtka
+                DonorStatusId = 2         // Aktivan
+            },
+            new Donor
+            {
+                FirstName = "",
+                LastName = "",
+                OrganizationName = "VetMedika d.o.o.",
+                Email = "kontakt@vetmedika.hr",
+                Phone = "013456789",
+                Address = "Ilica 200",
+                City = "Zagreb",
+                Notes = "Osigurava popuste na veterinarske usluge.",
+                CreatedAt = new DateTime(2026, 1, 8),
+                DonorTypeId = 2,          // Tvrtka
+                DonorStatusId = 1         // Novi
+            },
+            new Donor
+            {
+                FirstName = "",
+                LastName = "",
+                OrganizationName = "Udruga Šapa prijateljstva",
+                Email = "kontakt@sapaprijateljstva.hr",
+                Phone = "0915566778",
+                Address = "Trg slobode 8",
+                City = "Rijeka",
+                Notes = "Organizira akcije prikupljanja donacija.",
+                CreatedAt = new DateTime(2025, 12, 1),
+                DonorTypeId = 3,          // Udruga ili organizacija
+                DonorStatusId = 2         // Aktivan
+            }
+        );
 
+        await db.SaveChangesAsync();
+    }
+}
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AzilEduDbContext>();
+    await db.Database.MigrateAsync();
+
+    if (!await db.Employees.AnyAsync())
+    {
+        db.Employees.AddRange(
+            new Employee
+            {
+                FirstName = "Petra",
+                LastName = "Jurić",
+                Email = "petra.juric@azil.hr",
+                Phone = "0912223344",
+                EmployeeNumber = "EMP-001",
+                HireDate = new DateTime(2024, 3, 1),
+                Notes = "Voditeljica smjene.",
+                EmployeePositionId = 1,   // Djelatnik azila
+                EmployeeStatusId = 1      // Aktivan
+            },
+            new Employee
+            {
+                FirstName = "Ante",
+                LastName = "Perić",
+                Email = "ante.peric@azil.hr",
+                Phone = "0915556677",
+                EmployeeNumber = "EMP-002",
+                HireDate = new DateTime(2023, 9, 15),
+                Notes = "Zadužen za medicinske preglede.",
+                EmployeePositionId = 2,   // Veterinar
+                EmployeeStatusId = 1      // Aktivan
+            },
+            new Employee
+            {
+                FirstName = "Lucija",
+                LastName = "Barišić",
+                Email = "lucija.barisic@azil.hr",
+                Phone = "0918889900",
+                EmployeeNumber = "EMP-003",
+                HireDate = new DateTime(2025, 1, 10),
+                Notes = "Trenutno na bolovanju.",
+                EmployeePositionId = 3,   // Koordinator volontera
+                EmployeeStatusId = 2      // Na dopustu ili bolovanju
+            },
+            new Employee
+            {
+                FirstName = "Ivan",
+                LastName = "Šimić",
+                Email = "ivan.simic@azil.hr",
+                Phone = "0911112233",
+                EmployeeNumber = "EMP-004",
+                HireDate = new DateTime(2022, 6, 20),
+                Notes = "Vodi administraciju i evidenciju.",
+                EmployeePositionId = 4,   // Administrator
+                EmployeeStatusId = 1      // Aktivan
+            },
+            new Employee
+            {
+                FirstName = "Maja",
+                LastName = "Kovač",
+                Email = "maja.kovac@azil.hr",
+                Phone = "0914445566",
+                EmployeeNumber = "EMP-005",
+                HireDate = new DateTime(2021, 11, 5),
+                Notes = "Više ne radi u azilu.",
+                EmployeePositionId = 1,   // Djelatnik azila
+                EmployeeStatusId = 3      // Neaktivan
+            }
+        );
+
+        await db.SaveChangesAsync();
+    }
+}
 
 app.UseHttpsRedirection();
 

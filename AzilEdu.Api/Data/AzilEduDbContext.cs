@@ -15,6 +15,12 @@ public class AzilEduDbContext : DbContext
     public DbSet<AnimalStatus> AnimalStatuses => Set<AnimalStatus>();
     public DbSet<Volunteer> Volunteers => Set<Volunteer>();
     public DbSet<VolunteerStatus> VolunteerStatuses => Set<VolunteerStatus>();
+    public DbSet<Donor> Donors => Set<Donor>();
+    public DbSet<DonorType> DonorTypes => Set<DonorType>();
+    public DbSet<DonorStatus> DonorStatuses => Set<DonorStatus>();
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<EmployeePosition> EmployeePositions => Set<EmployeePosition>();
+    public DbSet<EmployeeStatus> EmployeeStatuses => Set<EmployeeStatus>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,5 +51,57 @@ public class AzilEduDbContext : DbContext
             new VolunteerStatus { Id = 3, Name = "Privremeno nedostupan" },
             new VolunteerStatus { Id = 4, Name = "Neaktivan" }
         );
+
+        modelBuilder.Entity<Donor>()
+            .HasOne(donor => donor.DonorStatus)
+            .WithMany(status => status.Donors)
+            .HasForeignKey(donor => donor.DonorStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+       
+        modelBuilder.Entity<Donor>()
+        .HasOne(donor => donor.DonorType)
+        .WithMany(type => type.Donors)
+        .HasForeignKey(donor => donor.DonorTypeId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DonorType>().HasData(
+            new DonorType { Id = 1,Name = "Fizička osoba" },
+            new DonorType { Id = 2, Name = "Tvrtka" },
+            new DonorType { Id = 3, Name = "Udruga ili organizacija" }
+
+            );
+
+        modelBuilder.Entity<DonorStatus>().HasData(
+            new DonorStatus { Id = 1, Name = "Novi" },
+            new DonorStatus { Id = 2, Name = "Aktivan" },
+            new DonorStatus { Id = 3, Name = "Povremeni" },
+            new DonorStatus { Id = 4, Name = "Neaktivan" }
+            );
+
+        modelBuilder.Entity<Employee>()
+            .HasOne(emp => emp.EmployeePosition)
+            .WithMany(pos => pos.Employees)
+            .HasForeignKey(emp => emp.EmployeePositionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Employee>()
+            .HasOne(emp => emp.EmployeeStatus)
+            .WithMany(status => status.Employees)
+            .HasForeignKey(emp => emp.EmployeeStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<EmployeePosition>().HasData(
+            new EmployeePosition { Id = 1, Name = "Djelatnik azila" },
+            new EmployeePosition { Id = 2, Name = "Veterinar" },
+            new EmployeePosition { Id = 3, Name = "Koordinator volontera" },
+            new EmployeePosition { Id = 4, Name = "Administrator" }
+        );
+
+        modelBuilder.Entity<EmployeeStatus>().HasData(
+            new EmployeeStatus { Id = 1, Name = "Aktivan" },
+            new EmployeeStatus { Id = 2, Name = "Na dopustu ili bolovanju" },
+            new EmployeeStatus { Id = 3, Name = "Neaktivan" }
+        );
+
     }
 }

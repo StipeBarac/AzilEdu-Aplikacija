@@ -3,6 +3,7 @@ using System;
 using AzilEdu.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AzilEdu.Api.Migrations
 {
     [DbContext(typeof(AzilEduDbContext))]
-    partial class AzilEduDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731141758_AddDonors2")]
+    partial class AddDonors2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
@@ -225,123 +228,6 @@ namespace AzilEdu.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("AzilEdu.Shared.Models.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EmployeeNumber")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EmployeePositionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("EmployeeStatusId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("HireDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeePositionId");
-
-                    b.HasIndex("EmployeeStatusId");
-
-                    b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.EmployeePosition", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EmployeePositions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Djelatnik azila"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Veterinar"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Koordinator volontera"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Administrator"
-                        });
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.EmployeeStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EmployeeStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Aktivan"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Na dopustu ili bolovanju"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Neaktivan"
-                        });
-                });
-
             modelBuilder.Entity("AzilEdu.Shared.Models.HousingUnit", b =>
                 {
                     b.Property<int>("Id")
@@ -491,25 +377,6 @@ namespace AzilEdu.Api.Migrations
                     b.Navigation("DonorType");
                 });
 
-            modelBuilder.Entity("AzilEdu.Shared.Models.Employee", b =>
-                {
-                    b.HasOne("AzilEdu.Shared.Models.EmployeePosition", "EmployeePosition")
-                        .WithMany("Employees")
-                        .HasForeignKey("EmployeePositionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AzilEdu.Shared.Models.EmployeeStatus", "EmployeeStatus")
-                        .WithMany("Employees")
-                        .HasForeignKey("EmployeeStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("EmployeePosition");
-
-                    b.Navigation("EmployeeStatus");
-                });
-
             modelBuilder.Entity("AzilEdu.Shared.Models.Volunteer", b =>
                 {
                     b.HasOne("AzilEdu.Shared.Models.VolunteerStatus", "VolunteerStatus")
@@ -534,16 +401,6 @@ namespace AzilEdu.Api.Migrations
             modelBuilder.Entity("AzilEdu.Shared.Models.DonorType", b =>
                 {
                     b.Navigation("Donors");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.EmployeePosition", b =>
-                {
-                    b.Navigation("Employees");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.EmployeeStatus", b =>
-                {
-                    b.Navigation("Employees");
                 });
 
             modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerStatus", b =>

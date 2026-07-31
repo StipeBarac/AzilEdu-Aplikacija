@@ -1,6 +1,144 @@
 ﻿@page "/employees"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
 
 <MudText Typo="Typo.h4" GutterBottom="true">Djelatnici</MudText>
-<MudText Typo="Typo.body1">
-    Ovdje ćemo kasnije pratiti djelatnike i administrativne ovlasti.
-</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudTextField @bind-Value="searchString"
+                          Label="Pretraži djelatnike"
+                          Placeholder="Ime, prezime, email ili oznaka"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" />
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudSelect T="string"
+                       Label="Status"
+                       @bind-Value="selectedStatus"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var status in statusList)
+                {
+                    <MudSelectItem Value="@status.Name">@status.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="3" Class="d-flex align-center">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="ResetFilters">
+                Očisti
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudTable Items="@employees"
+          Filter="FilterEmployees"
+          Hover="true"
+          Striped="true"
+          Bordered="true"
+          Dense="true">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<EmployeeDto, object>(x => x.FirstName)">Ime</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<EmployeeDto, object>(x => x.LastName)">Prezime</MudTableSortLabel></MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Telefon</MudTh>
+        <MudTh>Oznaka</MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<EmployeeDto, object>(x => x.HireDate ?? DateTime.MaxValue)">Datum zaposlenja</MudTableSortLabel></MudTh>
+        <MudTh>Pozicija</MudTh>
+        <MudTh>Status</MudTh>
+        
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="Ime">@context.FirstName</MudTd>
+        <MudTd DataLabel="Prezime">@context.LastName</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Telefon">@context.Phone</MudTd>
+        <MudTd DataLabel="Oznaka">@context.EmployeeNumber</MudTd>
+        <MudTd DataLabel="Datum zaposlenja">@(context.HireDate?.ToShortDateString() ?? "-")</MudTd>
+        <MudTd DataLabel="Pozicija">@context.PositionName</MudTd>
+        <MudTd DataLabel="Status">
+            <MudChip T="string" Color="@GetStatusColor(context.StatusName)">@context.StatusName</MudChip>
+        </MudTd>
+    </RowTemplate>
+
+    <NoRecordsContent>
+        <MudText Typo="Typo.body1" Class="pa-4">
+            Nema rezultata za zadane kriterije pretrage i filtera.
+        </MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private List<EmployeeDto> employees = new();
+    private List<LookupDto> statusList = new();
+    private string searchString = string.Empty;
+    private string? selectedStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await Http.GetFromJsonAsync<List<EmployeeDto>>("api/employees") ?? new();
+        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/employeestatuses") ?? new();
+    }
+
+    private bool FilterEmployees(EmployeeDto e)
+    {
+        if (!string.IsNullOrWhiteSpace(searchString))
+        {
+            var term = searchString.Trim().ToLower();
+            var matches =
+                (!string.IsNullOrWhiteSpace(e.FirstName) && e.FirstName.ToLower().Contains(term)) ||
+                (!string.IsNullOrWhiteSpace(e.LastName) && e.LastName.ToLower().Contains(term)) ||
+                (!string.IsNullOrWhiteSpace(e.Email) && e.Email.ToLower().Contains(term)) ||
+                (!string.IsNullOrWhiteSpace(e.EmployeeNumber) && e.EmployeeNumber.ToLower().Contains(term));
+
+            if (!matches)
+                return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedStatus) &&
+            !string.Equals(e.StatusName, selectedStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ResetFilters()
+    {
+        searchString = string.Empty;
+        selectedStatus = null;
+    }
+
+    private async Task DeleteEmployee(int id)
+    {
+        var response = await Http.DeleteAsync($"api/employees/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            employees = employees.Where(e => e.Id != id).ToList();
+        }
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Aktivan" => Color.Success,
+            "Na dopustu ili bolovanju" => Color.Warning,
+            "Neaktivan" => Color.Default,
+            _ => Color.Default
+        };
+    }
+}

@@ -1,6 +1,168 @@
 ﻿@page "/donors"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
 
 <MudText Typo="Typo.h4" GutterBottom="true">Donatori</MudText>
-<MudText Typo="Typo.body1">
-    Ovdje ćemo kasnije pratiti donatore i donacije za azil.
-</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudTextField @bind-Value="searchString"
+                          Label="Pretraži donatore"
+                          Placeholder="Ime, prezime, organizacija, email ili grad"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" />
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudSelect T="string"
+                       Label="Tip"
+                       @bind-Value="selectedType"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var type in typeList)
+                {
+                    <MudSelectItem Value="@type.Name">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudSelect T="string"
+                       Label="Status"
+                       @bind-Value="selectedStatus"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var status in statusList)
+                {
+                    <MudSelectItem Value="@status.Name">@status.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="2" Class="d-flex align-center">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="ResetFilters">
+                Očisti
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudTable Items="@donors"
+          Filter="FilterDonors"
+          Hover="true"
+          Striped="true"
+          Bordered="true"
+          Dense="true">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<DonorDto, object>(x => x.FirstName)">Ime</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<DonorDto, object>(x => x.LastName)">Prezime</MudTableSortLabel></MudTh>
+        <MudTh>Organizacija</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Telefon</MudTh>
+        <MudTh>Grad</MudTh>
+        <MudTh>Tip</MudTh>
+        <MudTh>Status</MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="Ime">@context.FirstName</MudTd>
+        <MudTd DataLabel="Prezime">@context.LastName</MudTd>
+        <MudTd DataLabel="Organizacija">@context.OrganizationName</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Telefon">@context.Phone</MudTd>
+        <MudTd DataLabel="Grad">@context.City</MudTd>
+        <MudTd DataLabel="Tip">@context.TypeName</MudTd>
+        <MudTd DataLabel="Status">
+            <MudChip T="string" Color="@GetStatusColor(context.StatusName)">@context.StatusName</MudChip>
+        </MudTd>        
+    </RowTemplate>
+
+    <NoRecordsContent>
+        <MudText Typo="Typo.body1" Class="pa-4">
+            Nema rezultata za zadane kriterije pretrage i filtera.
+        </MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private List<DonorDto> donors = new();
+    private List<LookupDto> statusList = new();
+    private List<LookupDto> typeList = new();
+    private string searchString = string.Empty;
+    private string? selectedStatus;
+    private string? selectedType;
+
+    protected override async Task OnInitializedAsync()
+    {
+        donors = await Http.GetFromJsonAsync<List<DonorDto>>("api/donors") ?? new();
+        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/donorstatuses") ?? new();
+        typeList = await Http.GetFromJsonAsync<List<LookupDto>>("api/donortypes") ?? new();
+    }
+
+    private bool FilterDonors(DonorDto d)
+    {
+        if (!string.IsNullOrWhiteSpace(searchString))
+        {
+            var term = searchString.Trim().ToLower();
+            var matches =
+                (!string.IsNullOrWhiteSpace(d.FirstName) && d.FirstName.ToLower().Contains(term)) ||
+                (!string.IsNullOrWhiteSpace(d.LastName) && d.LastName.ToLower().Contains(term)) ||
+                (!string.IsNullOrWhiteSpace(d.OrganizationName) && d.OrganizationName.ToLower().Contains(term)) ||
+                (!string.IsNullOrWhiteSpace(d.Email) && d.Email.ToLower().Contains(term)) ||
+                (!string.IsNullOrWhiteSpace(d.City) && d.City.ToLower().Contains(term));
+
+            if (!matches)
+                return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedType) &&
+            !string.Equals(d.TypeName, selectedType, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedStatus) &&
+            !string.Equals(d.StatusName, selectedStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ResetFilters()
+    {
+        searchString = string.Empty;
+        selectedStatus = null;
+        selectedType = null;
+    }
+
+    private async Task DeleteDonor(int id)
+    {
+        var response = await Http.DeleteAsync($"api/donors/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            donors = donors.Where(d => d.Id != id).ToList();
+        }
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Novi" => Color.Info,
+            "Aktivan" => Color.Success,
+            "Povremeni" => Color.Warning,
+            "Neaktivan" => Color.Default,
+            _ => Color.Default
+        };
+    }
+}
