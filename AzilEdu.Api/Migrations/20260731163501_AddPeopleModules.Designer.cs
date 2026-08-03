@@ -3,6 +3,7 @@ using System;
 using AzilEdu.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AzilEdu.Api.Migrations
 {
     [DbContext(typeof(AzilEduDbContext))]
-    partial class AzilEduDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731163501_AddPeopleModules")]
+    partial class AddPeopleModules
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
@@ -97,131 +100,6 @@ namespace AzilEdu.Api.Migrations
                         {
                             Id = 4,
                             Name = "Na liječenju"
-                        });
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.Donation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal?>("Amount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("DonationDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("DonationStatusId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("DonationTypeId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("DonorId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal?>("EstimatedValue")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ItemName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("Quantity")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DonationStatusId");
-
-                    b.HasIndex("DonationTypeId");
-
-                    b.HasIndex("DonorId");
-
-                    b.ToTable("Donations");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.DonationStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DonationStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Evidentirana"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Potvrđena"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Iskorištena"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Otkazana"
-                        });
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.DonationType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DonationTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Novčana"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Hrana"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Oprema"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Lijekovi"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Usluga"
                         });
                 });
 
@@ -586,144 +464,6 @@ namespace AzilEdu.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerTask", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("AnimalId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("VolunteerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("VolunteerTaskStatusId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("VolunteerTaskTypeId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AnimalId");
-
-                    b.HasIndex("VolunteerId");
-
-                    b.HasIndex("VolunteerTaskStatusId");
-
-                    b.HasIndex("VolunteerTaskTypeId");
-
-                    b.ToTable("VolunteerTasks");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerTaskStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VolunteerTaskStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Otvoren"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Dodijeljen"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "U tijeku"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Završeno"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Otkazano"
-                        });
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerTaskType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VolunteerTaskTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Šetnja"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Hranjenje"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Čišćenje"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Socijalizacija"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Prijevoz"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Name = "Administracija"
-                        });
-                });
-
             modelBuilder.Entity("AzilEdu.Shared.Models.Animal", b =>
                 {
                     b.HasOne("AzilEdu.Shared.Models.AnimalStatus", "AnimalStatus")
@@ -733,33 +473,6 @@ namespace AzilEdu.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("AnimalStatus");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.Donation", b =>
-                {
-                    b.HasOne("AzilEdu.Shared.Models.DonationStatus", "DonationStatus")
-                        .WithMany("Donations")
-                        .HasForeignKey("DonationStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AzilEdu.Shared.Models.DonationType", "DonationType")
-                        .WithMany("Donations")
-                        .HasForeignKey("DonationTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AzilEdu.Shared.Models.Donor", "Donor")
-                        .WithMany()
-                        .HasForeignKey("DonorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DonationStatus");
-
-                    b.Navigation("DonationType");
-
-                    b.Navigation("Donor");
                 });
 
             modelBuilder.Entity("AzilEdu.Shared.Models.Donor", b =>
@@ -811,52 +524,9 @@ namespace AzilEdu.Api.Migrations
                     b.Navigation("VolunteerStatus");
                 });
 
-            modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerTask", b =>
-                {
-                    b.HasOne("AzilEdu.Shared.Models.Animal", "Animal")
-                        .WithMany()
-                        .HasForeignKey("AnimalId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("AzilEdu.Shared.Models.Volunteer", "Volunteer")
-                        .WithMany()
-                        .HasForeignKey("VolunteerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("AzilEdu.Shared.Models.VolunteerTaskStatus", "VolunteerTaskStatus")
-                        .WithMany("Tasks")
-                        .HasForeignKey("VolunteerTaskStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AzilEdu.Shared.Models.VolunteerTaskType", "VolunteerTaskType")
-                        .WithMany("Tasks")
-                        .HasForeignKey("VolunteerTaskTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Animal");
-
-                    b.Navigation("Volunteer");
-
-                    b.Navigation("VolunteerTaskStatus");
-
-                    b.Navigation("VolunteerTaskType");
-                });
-
             modelBuilder.Entity("AzilEdu.Shared.Models.AnimalStatus", b =>
                 {
                     b.Navigation("Animals");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.DonationStatus", b =>
-                {
-                    b.Navigation("Donations");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.DonationType", b =>
-                {
-                    b.Navigation("Donations");
                 });
 
             modelBuilder.Entity("AzilEdu.Shared.Models.DonorStatus", b =>
@@ -882,16 +552,6 @@ namespace AzilEdu.Api.Migrations
             modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerStatus", b =>
                 {
                     b.Navigation("Volunteers");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerTaskStatus", b =>
-                {
-                    b.Navigation("Tasks");
-                });
-
-            modelBuilder.Entity("AzilEdu.Shared.Models.VolunteerTaskType", b =>
-                {
-                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,24 +1,256 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
-<MudPaper Class="pa-6" Elevation="1">
-    <MudText Typo="Typo.h3" GutterBottom="true">Dobro došli u AzilEdu</MudText>
-    <MudText Typo="Typo.body1" Class="mb-4">
-        Ova aplikacija služi za evidenciju životinja, udomljenja, medicinskih zapisa i drugih procesa u azilu.
-    </MudText>
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@using MudBlazor
 
+@inject HttpClient Http
+
+<MudText Typo="Typo.h3" Class="mb-2">AzilEdu</MudText>
+
+<MudText Typo="Typo.body1" Class="mb-6">
+    Pregled trenutnog stanja azila.
+</MudText>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-center my-6">
+        <MudProgressCircular Indeterminate="true"
+                             Color="Color.Primary" />
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+else if (summary is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">
+        Sažetak nije dostupan.
+    </MudAlert>
+}
+else
+{
     <MudGrid>
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4" Elevation="1">
-                <MudText Typo="Typo.h6">Što ćemo graditi?</MudText>
-                <MudText>Animals, Species, Breeds, Housing Units, Adopters i Adoptions.</MudText>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Pets"
+                             Color="Color.Primary"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Ukupno životinja</MudText>
+                        <MudText Typo="Typo.h4">@summary.AnimalsCount</MudText>
+                    </div>
+                </MudStack>
             </MudPaper>
         </MudItem>
 
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4" Elevation="1">
-                <MudText Typo="Typo.h6">Zašto odvojeni App i API?</MudText>
-                <MudText>Frontend prikazuje podatke korisniku, a API obrađuje zahtjeve i radi s bazom.</MudText>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Favorite"
+                             Color="Color.Success"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Dostupno za udomljenje</MudText>
+                        <MudText Typo="Typo.h4">@summary.AvailableAnimalsCount</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.VolunteerActivism"
+                             Color="Color.Info"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Aktivni volonteri</MudText>
+                        <MudText Typo="Typo.h4">@summary.ActiveVolunteersCount</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Assignment"
+                             Color="Color.Warning"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Otvoreni zadaci</MudText>
+                        <MudText Typo="Typo.h4">@summary.OpenVolunteerTasksCount</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Payments"
+                             Color="Color.Secondary"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Aktivni donatori</MudText>
+                        <MudText Typo="Typo.h4">@summary.ActiveDonorsCount</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Badge"
+                             Color="Color.Dark"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Djelatnici</MudText>
+                        <MudText Typo="Typo.h4">@summary.EmployeesCount</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.CardGiftcard"
+                             Color="Color.Primary"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Ukupno donacija</MudText>
+                        <MudText Typo="Typo.h4">@summary.DonationsCount</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.HourglassEmpty"
+                             Color="Color.Warning"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Donacije na čekanju</MudText>
+                        <MudText Typo="Typo.h4">@summary.PendingDonationsCount</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Euro"
+                             Color="Color.Success"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Ukupan donirani novčani iznos</MudText>
+                        <MudText Typo="Typo.h4">@summary.MoneyDonationsTotal.ToString("0.00") €</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2"
+                             Color="Color.Info"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Procijenjena vrijednost materijalnih donacija</MudText>
+                        <MudText Typo="Typo.h4">@summary.EstimatedMaterialDonationsTotal.ToString("0.00") €</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Warning"
+                             Color="Color.Error"
+                             Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Zadaci kojima je rok prošao</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Error">@summary.OverdueVolunteerTasksCount</MudText>
+                    </div>
+                </MudStack>
             </MudPaper>
         </MudItem>
     </MudGrid>
-</MudPaper>
+
+    <MudText Typo="Typo.h5" Class="mt-6 mb-2">Zadnjih 5 donacija</MudText>
+    <MudTable Items="recentDonations" Hover="true" Dense="true" Elevation="1">
+        <HeaderContent>
+            <MudTh>Donator</MudTh>
+            <MudTh>Tip</MudTh>
+            <MudTh>Datum</MudTh>
+            <MudTh>Iznos / Stvar</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Donator">@context.DonorName</MudTd>
+            <MudTd DataLabel="Tip">@context.DonationType</MudTd>
+            <MudTd DataLabel="Datum">@context.DonationDate.ToString("dd.MM.yyyy.")</MudTd>
+            <MudTd DataLabel="Iznos / Stvar">
+                @if (context.DonationType == "Novčana")
+                {
+                    <span>@(context.Amount?.ToString("0.00") ?? "-") €</span>
+                }
+                else
+                {
+                    <span>@(string.IsNullOrWhiteSpace(context.ItemName) ? "-" : context.ItemName)</span>
+                }
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Class="pa-4">Još nema donacija.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+
+    <MudPaper Class="pa-4 mt-6" Elevation="1">
+        <MudText Typo="Typo.h6" Class="mb-2">
+            Što dashboard pokazuje?
+        </MudText>
+
+        <MudText Typo="Typo.body2">
+            Dashboard ne dohvaća cijele liste životinja, volontera, donatora i zadataka.
+            Umjesto toga poziva API endpoint <code>api/dashboard/summary</code>,
+            a API iz baze vraća samo agregirane brojeve koji su potrebni za početnu stranicu.
+        </MudText>
+    </MudPaper>
+}
+
+@code {
+    private DashboardSummaryDto? summary;
+    private List<RecentDonationDto> recentDonations = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            summary = await Http.GetFromJsonAsync<DashboardSummaryDto>("api/dashboard/summary");
+            recentDonations = await Http.GetFromJsonAsync<List<RecentDonationDto>>("api/dashboard/recent-donations") ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod učitavanja dashboarda: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

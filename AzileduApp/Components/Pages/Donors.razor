@@ -6,6 +6,17 @@
 
 <MudText Typo="Typo.h4" GutterBottom="true">Donatori</MudText>
 
+<MudText Typo="Typo.h4" GutterBottom="true">Donatori</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/donors/create" Class="mb-4">
+    Novi donator
+</MudButton>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@errorMessage</MudAlert>
+}
+
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
         <MudItem xs="12" md="4">
@@ -54,7 +65,15 @@
         </MudItem>
     </MudGrid>
 </MudPaper>
-
+@if (isLoading)
+{
+    <div class="d-flex justify-center my-6">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+    </div>
+}
+else
+{
+    
 <MudTable Items="@donors"
           Filter="FilterDonors"
           Hover="true"
@@ -70,6 +89,7 @@
         <MudTh>Grad</MudTh>
         <MudTh>Tip</MudTh>
         <MudTh>Status</MudTh>
+        <MudTh>Akcije</MudTh>
     </HeaderContent>
 
     <RowTemplate>
@@ -82,7 +102,15 @@
         <MudTd DataLabel="Tip">@context.TypeName</MudTd>
         <MudTd DataLabel="Status">
             <MudChip T="string" Color="@GetStatusColor(context.StatusName)">@context.StatusName</MudChip>
-        </MudTd>        
+        </MudTd>
+        <MudTd DataLabel="Akcije">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                           Color="Color.Primary"
+                           Href="@($"/donors/edit/{context.Id}")" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                           Color="Color.Error"
+                           OnClick="@(() => DeleteDonor(context.Id))" />
+        </MudTd>
     </RowTemplate>
 
     <NoRecordsContent>
@@ -91,6 +119,8 @@
         </MudText>
     </NoRecordsContent>
 </MudTable>
+}s
+
 
 @code {
     private List<DonorDto> donors = new();
@@ -99,12 +129,26 @@
     private string searchString = string.Empty;
     private string? selectedStatus;
     private string? selectedType;
+    private bool isLoading = true;
+
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        donors = await Http.GetFromJsonAsync<List<DonorDto>>("api/donors") ?? new();
-        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/donorstatuses") ?? new();
-        typeList = await Http.GetFromJsonAsync<List<LookupDto>>("api/donortypes") ?? new();
+        try
+        {
+            donors = await Http.GetFromJsonAsync<List<DonorDto>>("api/donors") ?? new();
+            statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/donorstatuses") ?? new();
+            typeList = await Http.GetFromJsonAsync<List<LookupDto>>("api/donortypes") ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod učitavanja donatora: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private bool FilterDonors(DonorDto d)

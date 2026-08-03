@@ -14,7 +14,6 @@ public class SaveDonorDto
     public string Address { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
-
     public int DonorTypeId { get; set; }
     public int DonorStatusId { get; set; }
 }

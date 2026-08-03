@@ -149,4 +149,19 @@ public class AnimalsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("lookup")]
+    public async Task<ActionResult<List<LookupDto>>> GetLookup()
+    {
+        var animals = await _context.Animals
+            .OrderBy(a => a.Name)
+            .Select(a => new LookupDto
+            {
+                Id = a.Id,
+                Name = a.Name
+            })
+            .ToListAsync();
+
+        return Ok(animals);
+    }
 }
