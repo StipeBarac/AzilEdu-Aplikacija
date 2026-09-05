@@ -67,6 +67,10 @@ public class DonationsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<DonationDto>> CreateDonation(SaveDonationDto request)
     {
+        var validationError = ValidateDonation(request);
+        if (validationError is not null)
+            return BadRequest(validationError);
+
         var donation = new Donation
         {
             DonorId = request.DonorId,
@@ -89,6 +93,10 @@ public class DonationsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateDonation(int id, SaveDonationDto request)
     {
+        var validationError = ValidateDonation(request);
+        if (validationError is not null)
+            return BadRequest(validationError);
+
         var donation = await _context.Donations.FindAsync(id);
         if (donation is null)
             return NotFound();
@@ -117,6 +125,45 @@ public class DonationsController : ControllerBase
         _context.Donations.Remove(donation);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    private static string? ValidateDonation(SaveDonationDto request)
+    {
+        if (request.DonorId <= 0)
+            return "Donator je obavezan.";
+
+        if (request.DonationTypeId <= 0)
+            return "Tip donacije je obavezan.";
+
+        if (request.DonationStatusId <= 0)
+            return "Status donacije je obavezan.";
+
+        if (request.DonationDate.Date > DateTime.Today)
+            return "Datum donacije ne smije biti u budućnosti.";
+
+        if (request.Quantity.HasValue && request.Quantity.Value < 0)
+            return "Količina ne smije biti negativna.";
+
+        if (request.EstimatedValue.HasValue && request.EstimatedValue.Value < 0)
+            return "Procijenjena vrijednost ne smije biti negativna.";
+
+        var isMoneyDonation = request.DonationTypeId == 1;
+
+        if (isMoneyDonation)
+        {
+            if (!request.Amount.HasValue || request.Amount.Value <= 0)
+                return "Za novčanu donaciju potrebno je upisati iznos veći od nule.";
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(request.ItemName))
+                return "Za materijalnu donaciju potrebno je upisati naziv donacije.";
+
+            if (!request.Quantity.HasValue || request.Quantity.Value <= 0)
+                return "Za materijalnu donaciju potrebno je upisati količinu veću od nule.";
+        }
+
+        return null;
     }
 
     private static DonationDto ToDto(Donation d)

@@ -415,8 +415,11 @@ using (var scope = app.Services.CreateScope())
 
         await db.SaveChangesAsync();
     }
+
+    await AppUserSeeder.SeedAsync(db);
 }
 
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

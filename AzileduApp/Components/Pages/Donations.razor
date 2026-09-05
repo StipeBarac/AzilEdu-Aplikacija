@@ -6,6 +6,7 @@
 @using MudBlazor
 
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <MudText Typo="Typo.h4" Class="mb-4">Donacije</MudText>
 
@@ -220,10 +221,20 @@ else
 
     private async Task DeleteDonation(int id)
     {
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm",
+            "Jesi li siguran da želiš obrisati ovu donaciju?");
+
+        if (!confirmed)
+            return;
+
+        errorMessage = null;
+
         var response = await Http.DeleteAsync($"api/donations/{id}");
         if (response.IsSuccessStatusCode)
         {
-            donations = donations.Where(d => d.Id != id).ToList();
+            // Osvježi tablicu i dashboard podatke iz baze.
+            await LoadDonations();
         }
         else
         {

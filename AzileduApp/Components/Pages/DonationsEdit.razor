@@ -119,23 +119,60 @@ else
 
     private async Task Save()
     {
-        errorMessage = null;
-
-        if (model.DonorId == 0 || model.DonationTypeId == 0 || model.DonationStatusId == 0)
-        {
-            errorMessage = "Donator, tip i status su obavezni.";
+        errorMessage = ValidateForm();
+        if (errorMessage is not null)
             return;
-        }
 
         model.DonationDate = donationDate ?? DateTime.Today;
 
-        var response = await Http.PutAsJsonAsync($"api/donations/{Id}", model);
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            errorMessage = "Promjene nisu spremljene.";
-            return;
+            var response = await Http.PutAsJsonAsync($"api/donations/{Id}", model);
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            Navigation.NavigateTo("/donations");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Promjene nije moguće spremiti: {ex.Message}";
+        }
+    }
+
+    private string? ValidateForm()
+    {
+        if (model.DonorId <= 0 || model.DonationTypeId <= 0 || model.DonationStatusId <= 0)
+            return "Donator, tip i status su obavezni.";
+
+        if (!donationDate.HasValue)
+            return "Odaberi datum donacije.";
+
+        if (donationDate.Value.Date > DateTime.Today)
+            return "Datum donacije ne smije biti u budućnosti.";
+
+        if (model.Quantity.HasValue && model.Quantity.Value < 0)
+            return "Količina ne smije biti negativna.";
+
+        if (model.EstimatedValue.HasValue && model.EstimatedValue.Value < 0)
+            return "Procijenjena vrijednost ne smije biti negativna.";
+
+        if (IsMonetary)
+        {
+            if (!model.Amount.HasValue || model.Amount.Value <= 0)
+                return "Za novčanu donaciju upiši iznos veći od nule.";
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(model.ItemName))
+                return "Upiši naziv materijalne donacije.";
+
+            if (!model.Quantity.HasValue || model.Quantity.Value <= 0)
+                return "Upiši količinu veću od nule.";
         }
 
-        Navigation.NavigateTo("/donations");
+        return null;
     }
 }
