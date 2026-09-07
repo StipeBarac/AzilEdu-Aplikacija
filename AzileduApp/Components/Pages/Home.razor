@@ -70,6 +70,38 @@ else if (CurrentUser.HasRole("Donor"))
     </MudPaper>
 }
 
+@if (CurrentUser.HasAnyRole("Admin", "Employee"))
+{
+    <MudPaper Class="pa-4 mb-6" Elevation="2">
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Justify="Justify.SpaceBetween">
+            <div>
+                <MudText Typo="Typo.h6">AI dnevni sažetak</MudText>
+                @if (providerStatus is not null)
+                {
+                    <MudText Typo="Typo.caption">
+                        Provider: @providerStatus.Provider · Model: @providerStatus.Model
+                    </MudText>
+                }
+            </div>
+            <MudButton OnClick="GenerateDailySummary"
+                       Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       Disabled="isGeneratingAiSummary">
+                @(isGeneratingAiSummary ? "Generiram..." : "Generiraj sažetak")
+            </MudButton>
+        </MudStack>
+
+        @if (!string.IsNullOrWhiteSpace(aiSummary))
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-3">
+                @aiSummary
+            </MudAlert>
+        }
+    </MudPaper>
+}
+
 @if (isLoading)
 {
     <div class="d-flex justify-center my-6">
@@ -297,12 +329,22 @@ else
     private int myUnfinishedTasks;
     private int myDonationsCount;
 
+    private string? aiSummary;
+    private bool isGeneratingAiSummary;
+    private AiProviderStatusDto? providerStatus;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             summary = await Http.GetFromJsonAsync<DashboardSummaryDto>("api/dashboard/summary");
             recentDonations = await Http.GetFromJsonAsync<List<RecentDonationDto>>("api/dashboard/recent-donations") ?? new();
+
+            if (CurrentUser.HasAnyRole("Admin", "Employee"))
+            {
+                providerStatus = await Http.GetFromJsonAsync<AiProviderStatusDto>(
+                    "api/ai/status");
+            }
 
             await LoadPersonalData();
         }
@@ -318,21 +360,42 @@ else
 
     private async Task LoadPersonalData()
     {
-        if (CurrentUser.HasRole("Volunteer") && CurrentUser.User?.VolunteerId is int volunteerId)
+        if (CurrentUser.HasRole("Volunteer"))
         {
             var myTasks = await Http.GetFromJsonAsync<List<VolunteerTaskDto>>(
-                $"api/volunteertasks?volunteerId={volunteerId}") ?? new();
+                "api/volunteertasks/mine") ?? new();
 
             myUnfinishedTasks = myTasks.Count(task =>
                 task.Status != "Završeno" && task.Status != "Otkazano");
         }
 
-        if (CurrentUser.HasRole("Donor") && CurrentUser.User?.DonorId is int donorId)
+        if (CurrentUser.HasRole("Donor"))
         {
             var myDonations = await Http.GetFromJsonAsync<List<DonationDto>>(
-                $"api/donations?donorId={donorId}") ?? new();
+                "api/donations/mine") ?? new();
 
             myDonationsCount = myDonations.Count;
+        }
+    }
+
+    private async Task GenerateDailySummary()
+    {
+        isGeneratingAiSummary = true;
+        errorMessage = null;
+
+        try
+        {
+            var result = await Http.GetFromJsonAsync<AiTextResponseDto>(
+                "api/ai/daily-summary");
+            aiSummary = result?.Text;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"AI sažetak nije dostupan: {ex.Message}";
+        }
+        finally
+        {
+            isGeneratingAiSummary = false;
         }
     }
 }

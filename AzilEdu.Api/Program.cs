@@ -1,6 +1,12 @@
 using AzilEdu.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using AzilEdu.Shared.Models;
+using AzilEdu.Api.Security;
+using AzilEdu.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +18,68 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
+
+var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName);
+var jwtOptions = jwtSection.Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Nedostaje Jwt konfiguracija.");
+
+if (jwtOptions.SigningKey.Length < 32)
+    throw new InvalidOperationException(
+        "Jwt:SigningKey mora imati najmanje 32 znaka.");
+
+builder.Services.Configure<JwtOptions>(jwtSection);
+builder.Services.AddScoped<JwtTokenService>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
+    options.AddPolicy(
+        AuthorizationPolicies.Staff,
+        policy => policy.RequireRole("Admin", "Employee"));
+
+    options.AddPolicy(
+        AuthorizationPolicies.AdminOnly,
+        policy => policy.RequireRole("Admin"));
+});
+
+builder.Services.Configure<AiOptions>(
+    builder.Configuration.GetSection(AiOptions.SectionName));
+
+builder.Services.AddScoped<MockAiService>();
+builder.Services.AddScoped<OpenAiService>();
+
+builder.Services.AddScoped<IAiService>(services =>
+{
+    var provider = builder.Configuration["Ai:Provider"];
+
+    return string.Equals(
+        provider,
+        "OpenAI",
+        StringComparison.OrdinalIgnoreCase)
+            ? services.GetRequiredService<OpenAiService>()
+            : services.GetRequiredService<MockAiService>();
+});
 
 var app = builder.Build();
 
@@ -419,9 +487,129 @@ using (var scope = app.Services.CreateScope())
     await AppUserSeeder.SeedAsync(db);
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AzilEduDbContext>();
+    await db.Database.MigrateAsync();
+
+    if (!await db.Donations.AnyAsync())
+    {
+        db.Donations.AddRange(
+            new Donation
+            {
+                DonorId = 1, DonationTypeId = 1, DonationStatusId = 2,
+                DonationDate = DateTime.Today.AddDays(-5),
+                Amount = 150.00m,
+                Notes = "Mjesečna novčana donacija."
+            },
+            new Donation
+            {
+                DonorId = 1, DonationTypeId = 2, DonationStatusId = 1,
+                DonationDate = DateTime.Today.AddDays(-2),
+                ItemName = "Vreća suhe hrane 15 kg", Quantity = 4, EstimatedValue = 80.00m,
+                Notes = "Dostavljeno u skladište."
+            },
+            new Donation
+            {
+                DonorId = 3, DonationTypeId = 2, DonationStatusId = 3,
+                DonationDate = DateTime.Today.AddDays(-20),
+                ItemName = "Pijesak za mačke", Quantity = 10, EstimatedValue = 60.00m,
+                Notes = "Redovita mjesečna donacija tvrtke."
+            },
+            new Donation
+            {
+                DonorId = 2, DonationTypeId = 1, DonationStatusId = 2,
+                DonationDate = DateTime.Today.AddDays(-10),
+                Amount = 50.00m,
+                Notes = "Jednokratna donacija."
+            },
+            new Donation
+            {
+                DonorId = 5, DonationTypeId = 3, DonationStatusId = 1,
+                DonationDate = DateTime.Today.AddDays(-1),
+                ItemName = "Transporteri za životinje", Quantity = 3, EstimatedValue = 120.00m,
+                Notes = "Za prijevoz kod veterinara."
+            },
+            new Donation
+            {
+                DonorId = 4, DonationTypeId = 5, DonationStatusId = 2,
+                DonationDate = DateTime.Today.AddDays(-7),
+                ItemName = "Veterinarski pregledi", Quantity = 5, EstimatedValue = 200.00m,
+                Notes = "Donirane usluge pregleda."
+            }
+        );
+
+        await db.SaveChangesAsync();
+    }
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AzilEduDbContext>();
+    await db.Database.MigrateAsync();
+
+    if (!await db.VolunteerTasks.AnyAsync())
+    {
+        db.VolunteerTasks.AddRange(
+            new VolunteerTask
+            {
+                Title = "Jutarnja šetnja Lune",
+                Description = "Šetnja i osnovna poslušnost.",
+                DueDate = DateTime.Today.AddDays(2),
+                VolunteerId = 1, AnimalId = 1,
+                VolunteerTaskStatusId = 3, VolunteerTaskTypeId = 1
+            },
+            new VolunteerTask
+            {
+                Title = "Hranjenje Rexa",
+                Description = "Rok je prošao, treba obaviti.",
+                DueDate = DateTime.Today.AddDays(-1),
+                VolunteerId = 1, AnimalId = 3,
+                VolunteerTaskStatusId = 1, VolunteerTaskTypeId = 2
+            },
+            new VolunteerTask
+            {
+                Title = "Socijalizacija mačke Maze",
+                Description = "Naviknuti na kontakt s ljudima.",
+                DueDate = DateTime.Today.AddDays(5),
+                VolunteerId = 2, AnimalId = 2,
+                VolunteerTaskStatusId = 2, VolunteerTaskTypeId = 4
+            },
+            new VolunteerTask
+            {
+                Title = "Ažuriranje evidencije udomljavanja",
+                Description = "Administrativni zadatak, rok probijen.",
+                DueDate = DateTime.Today.AddDays(-3),
+                VolunteerId = 2, AnimalId = null,
+                VolunteerTaskStatusId = 1, VolunteerTaskTypeId = 6
+            },
+            new VolunteerTask
+            {
+                Title = "Čišćenje mačje sobe",
+                Description = "Redovito tjedno čišćenje.",
+                DueDate = DateTime.Today.AddDays(-4),
+                CompletedAt = DateTime.Today.AddDays(-2),
+                VolunteerId = 3, AnimalId = 4,
+                VolunteerTaskStatusId = 4, VolunteerTaskTypeId = 3
+            },
+            new VolunteerTask
+            {
+                Title = "Prijevoz Tobija veterinaru",
+                Description = "Otkazano zbog pomaka termina.",
+                DueDate = DateTime.Today.AddDays(-6),
+                VolunteerId = 4, AnimalId = 5,
+                VolunteerTaskStatusId = 5, VolunteerTaskTypeId = 5
+            }
+        );
+
+        await db.SaveChangesAsync();
+    }
+}
+
 app.UseStaticFiles();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

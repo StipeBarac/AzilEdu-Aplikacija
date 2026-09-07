@@ -12,7 +12,7 @@
 <MudText Typo="Typo.h4" GutterBottom="true">Prijava</MudText>
 
 <MudText Typo="Typo.body1" Class="mb-4">
-    Prijavi se demo korisnikom i provjeri kako se aplikacija mijenja prema ulozi.
+    Prijavite se svojim računom za pristup sustavu.
 </MudText>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -62,19 +62,20 @@
 
             if (!response.IsSuccessStatusCode)
             {
-                errorMessage = "Prijava nije uspjela. Provjeri email i lozinku.";
+                errorMessage = "Pogrešan email ili lozinka.";
                 return;
             }
 
-            var user = await response.Content.ReadFromJsonAsync<LoggedUserDto>();
+            var login = await response.Content
+                .ReadFromJsonAsync<LoginResponseDto>();
 
-            if (user is null)
+            if (login is null)
             {
                 errorMessage = "API nije vratio podatke o korisniku.";
                 return;
             }
 
-            CurrentUser.Login(user);
+            await CurrentUser.LoginAsync(login);
             Navigation.NavigateTo("/");
         }
         finally

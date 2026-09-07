@@ -8,6 +8,8 @@ namespace AzilEdu.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Microsoft.AspNetCore.Authorization.Authorize(
+    Policy = AzilEdu.Api.Security.AuthorizationPolicies.AdminOnly)]
 public class EmployeesController : ControllerBase
 {
     private readonly AzilEduDbContext _context;
@@ -129,5 +131,20 @@ public class EmployeesController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpGet("lookup")]
+    public async Task<ActionResult<List<LookupDto>>> GetLookup()
+    {
+        var employees = await _context.Employees
+            .OrderBy(e => e.LastName)
+            .Select(e => new LookupDto
+            {
+                Id = e.Id,
+                Name = e.FirstName + " " + e.LastName
+            })
+            .ToListAsync();
+
+        return Ok(employees);
     }
 }
