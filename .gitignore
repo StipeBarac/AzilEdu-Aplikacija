@@ -361,3 +361,14 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# SQLite baza (generira se iz migracija) i backup kopije
+AzilEdu.Api/AzilEdu.db
+AzilEdu.Api/AzilEdu.db-shm
+AzilEdu.Api/AzilEdu.db-wal
+*.db-shm
+*.db-wal
+*.bak-*
+
+# Uploadane datoteke (korisnički sadržaj)
+AzilEdu.Api/wwwroot/uploads/animals/*
+!AzilEdu.Api/wwwroot/uploads/animals/.gitkeep
